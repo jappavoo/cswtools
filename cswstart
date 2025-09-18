@@ -1,0 +1,8 @@
+#!/bin/bash
+
+nb=${1:-csw-dev}
+ns=${2:-''}
+[[ -n $ns ]] && ns="-n $ns"
+
+oc patch notebook $nb $ns --type merge -p '{"metadata":{"annotations":{"kubeflow-resource-stopped":null}}}'
+

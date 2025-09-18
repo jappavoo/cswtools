@@ -1,0 +1,49 @@
+#!/bin/bash
+
+declare -i retry
+declare -i start
+for (( retry=0 ; retry<3; retry++)); do
+    cswping -q && break
+    (( $# > 0 )) && {
+	echo -e \
+	"ERROR: csw not running. Please start an interactive session\n"\
+	"before trying to run non-interactive commands. To start and\n"\
+	"keep an interactive session use csw with no arguments and\n"\
+	"keep it that terminal open." > /dev/stderr
+	exit -1
+    }
+    (( retry == 0 )) && {
+	echo "starting csw" > /dev/stderr
+	cswstart
+	(( start++ ))
+    }
+    echo "Waiting for csw to start" >/dev/stderr
+    sleep 15
+done
+
+
+container=csw-dev
+pods=($(oc get pods -o name | grep "/${container}"))
+
+pod=${pods[0]}
+
+[[ -z $pod ]] && {
+   echo "Can't find a pod with $container in its name.  Have you started the notebook?" > /dev/stderr
+   exit -1
+}
+
+pod=${pod##*/}
+
+if [[ $# == 0 ]]; then
+    (( start )) && {
+	echo "WARNING: closing this session will stop csw" > /dev/stderr
+    }
+    oc rsh -c $container $pod /bin/bash -l
+    (( start )) && {
+	echo "stopping csw" > /dev/stderr
+	cswstop
+    }
+else 
+  oc rsh -c $container $pod $@
+fi
+

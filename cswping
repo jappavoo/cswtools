@@ -1,0 +1,36 @@
+#!/bin/bash
+#set -x
+declare -i retry quiet
+declare json
+
+[[ $1 == '-q' ]] && quiet=1
+
+while ((retry <3 )); do
+  json="$(oc get notebook -o json 2>&1)"
+  if [[ $json =~ 'error: You must be logged in to the server' ||
+        $json =~ 'Error from server (Forbidden):' ]]; then
+     echo "initiating openshift login" 2> /dev/stderr
+     oc login --web
+     (( $? != 0 )) && { 
+         echo "$retry: login failed" > /dev/stderr
+     }
+  else 
+      break;
+  fi
+  (( retry++ ))  
+done
+
+(( retry == 3 )) && {
+    echo "ERROR: failed to login???" >/dev/stderr
+    exit -1
+}
+
+out="$(jq '.items[0].status.containerState.running' <<<${json})"
+
+if [[ $out == null ]]; then
+    echo "ERROR: csw-dev unreachable" 2>/dev/stderr
+    exit -1
+else
+    (( ! quiet )) && echo "$out"
+fi
+exit 0
