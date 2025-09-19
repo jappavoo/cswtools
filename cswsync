@@ -1,0 +1,15 @@
+#!/bin/bash
+set -x
+nb="csw-dev-0"
+src=${1:-''}
+
+dest=~/cswsync/${nb}
+
+[[ ! -d $dest ]] && {
+    ! mkdir -p $dest && {
+	echo "ERROR: could not create local sync dir $dest"
+	exit -1
+    }
+}	
+
+oc rsync ${nb}: $dest 
