@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 nb="csw-dev-0"
-src=${1:-''}
+direction=${1:-put}
 
 dest=~/cswsync/${nb}
 
@@ -12,4 +12,12 @@ dest=~/cswsync/${nb}
     }
 }	
 
-oc rsync ${nb}: $dest 
+case $direction in
+    get|from|pull)
+	oc rsync ${nb}: $dest
+	;;
+    put|push|to)
+	oc rsync ${dest}/ ${nb}:
+	;;
+esac
+
