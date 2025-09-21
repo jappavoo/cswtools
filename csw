@@ -44,6 +44,6 @@ if [[ $# == 0 ]]; then
 	cswstop
     }
 else 
-  oc rsh -c $container $pod $@
+  oc rsh -T -c $container $pod $@
 fi
 
