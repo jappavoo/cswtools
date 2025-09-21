@@ -14,10 +14,10 @@ dest=~/cswsync/${nb}
 
 case $direction in
     get|from|pull)
-	oc rsync ${nb}: $dest
+	oc rsync --exclude .kube/ ${nb}: $dest 
 	;;
     put|push|to)
-	oc rsync ${dest}/ ${nb}:
+	oc rsync --exclude .kube/ ${dest}/ ${nb}:
 	;;
 esac
 
